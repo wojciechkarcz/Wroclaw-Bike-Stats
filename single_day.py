@@ -2,7 +2,7 @@ import streamlit as st
 import datetime
 from datetime import datetime, timedelta
 from google.oauth2 import service_account
-import pandas_gbq
+#import pandas_gbq
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -25,15 +25,15 @@ credentials = service_account.Credentials.from_service_account_info(
 
 
 st.set_page_config(
-    page_title="Wrocław City bike data app",
+    page_title="Wroclaw Bike Stats",
     page_icon="🚴‍♂️",
     layout='centered'
     )
 
-st.sidebar.header("Wrocław City Bike Stats")
+st.sidebar.header("Wrocław Bike Stats")
 st.sidebar.markdown('On this page you can get all city bike related data from single day')
 
-st.title('🗓️ Single day - test')
+st.title('🗓️ Single day data')
 
 @st.cache_data
 def load_data(start_date, end_date):
