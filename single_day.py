@@ -31,7 +31,7 @@ st.set_page_config(
     )
 
 st.sidebar.header("Wrocław Bike Stats")
-st.sidebar.markdown('On this page you can get all city bike related data from single day')
+st.sidebar.markdown('It is a web application that aggregates data on the Wrocław City Bike')
 
 st.title('🗓️ Single day data')
 
