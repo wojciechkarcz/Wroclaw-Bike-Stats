@@ -25,14 +25,12 @@ credentials = service_account.Credentials.from_service_account_info(
 
 @st.cache_data
 def load_data(start_date, end_date):
-    #credentials = service_account.Credentials.from_service_account_file('google_key.json')
     query = 'SELECT * FROM citybike_wroclaw_2023.bike_rides_2023 WHERE start_time > \'{}\' AND start_time < \'{}\''.format(start_date, end_date)
     df = pd.read_gbq(query, project_id=st.secrets['project_id'], credentials=credentials)
     return df
 
 @st.cache_data
 def load_last_date():
-    #credentials = service_account.Credentials.from_service_account_file('google_key.json')
     query = 'SELECT start_time FROM citybike_wroclaw_2023.bike_rides_2023 ORDER BY start_time DESC LIMIT 1'
     df = pd.read_gbq(query, project_id=st.secrets['project_id'], credentials=credentials)
     return np.datetime_as_string(df.tail(1)['start_time'].values[0],unit='D')
