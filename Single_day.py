@@ -29,7 +29,6 @@ def load_data(start_date, end_date):
     df = pd.read_gbq(query, project_id=st.secrets['project_id'], credentials=credentials)
     return df
 
-@st.cache_data
 def load_last_date():
     query = 'SELECT start_time FROM citybike_wroclaw_2023.bike_rides_2023 ORDER BY start_time DESC LIMIT 1'
     df = pd.read_gbq(query, project_id=st.secrets['project_id'], credentials=credentials)

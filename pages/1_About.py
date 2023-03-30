@@ -40,7 +40,7 @@ st.markdown('''The current version of the application is only the first stage of
 st.markdown('##')
 
 st.markdown('#### Documentation')
-st.markdown(''' The Wrocław Bike Stats project is completely open-source. All code and technical documentation is on Github: [link to Github repo](https://github.com/wojciechkarcz)
+st.markdown(''' The Wrocław Bike Stats project is completely open-source. All code and technical documentation is on Github: [github.com/wojciechkarcz/Wroclaw-Bike-Stats](https://github.com/wojciechkarcz/Wroclaw-Bike-Stats)
 ''')
 
 st.markdown('##')
