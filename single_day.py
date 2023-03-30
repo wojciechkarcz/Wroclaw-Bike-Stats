@@ -85,7 +85,7 @@ st.markdown('###')
 data = df.loc[df['start_time'].dt.date == pd.Timestamp(st.session_state.day)].groupby(df['start_time'].dt.hour)['uid'].count()
 
 
-# Defining variables to the first chart and essential stats
+# Defining variables for the ride time distribution chart and essential stats
 df_day = df.loc[df['start_time'].dt.date == pd.Timestamp(st.session_state.day)]
 df_day_before = df.loc[df['start_time'].dt.date == pd.Timestamp(st.session_state.day-timedelta(days=1))]
 
@@ -112,7 +112,7 @@ with col2:
     st.metric(label="Avg. ride distance", value='{} km'.format(avg_ride_length), delta=str(avg_ride_length_delta))
 
 
-# Table with top rental places
+# Table with top rental stations
 rental_df = df.loc[df['start_time'].dt.date == pd.Timestamp(st.session_state.day)].groupby('rental_place')['uid'].count().reset_index(name='rental_count')
 return_df = df.loc[df['start_time'].dt.date == pd.Timestamp(st.session_state.day)].groupby('return_place')['uid'].count().reset_index(name='return_count')
 
