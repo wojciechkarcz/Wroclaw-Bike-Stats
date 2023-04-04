@@ -1,6 +1,6 @@
 # Introduction
 
-<img='/img/app_home_screen.png' width=400>
+<img src='img/app_home_screen.png' width=600>
 
 The **Wroclaw Bike Stats** web application aggregates, processes and visualizes data on city bike rides in Wrocław, Poland.
 
