@@ -34,6 +34,12 @@ def load_last_date():
     df = pd.read_gbq(query, project_id=st.secrets['project_id'], credentials=credentials)
     return np.datetime_as_string(df.tail(1)['start_time'].values[0],unit='D')
 
+def date_range(date):
+    end_date = date.strftime('%Y-%m-%d') + ' 23:59:59' 
+    start_date = (datetime.strptime(end_date,'%Y-%m-%d %H:%M:%S')-timedelta(days=1)).strftime('%Y-%m-%d')
+    return start_date, end_date
+
+
 def main():
 
     st.set_page_config(
@@ -50,32 +56,29 @@ def main():
 
     current_date = load_last_date()
 
-if 'day' not in st.session_state:
-    st.session_state.day = datetime.strptime(current_date,'%Y-%m-%d')
+    if 'day' not in st.session_state:
+        st.session_state.day = datetime.strptime(current_date,'%Y-%m-%d')
 
-temp_date = st.session_state.day
+    temp_date = st.session_state.day
+    start_date, end_date = date_range(st.session_state.day)
 
-end_date = st.session_state.day.strftime('%Y-%m-%d') + ' 23:59:59' 
-start_date = (datetime.strptime(end_date,'%Y-%m-%d %H:%M:%S')-timedelta(days=1)).strftime('%Y-%m-%d')
+    # Date input widget
+    colA, colB = st.columns([1,2],gap='medium')
+
+    with colA:
+        st.date_input(":date: **Pick the date:**", key='day', value=temp_date, min_value=datetime.strptime('2023-03-02','%Y-%m-%d'), max_value=datetime.strptime(current_date,'%Y-%m-%d'))
+
+    title_date = st.session_state.day.strftime('%#d %B %Y')
+    title_weekday = st.session_state.day.strftime('%A')
+
+    st.markdown('---')
+
+    # Data loading (current day and day before)
+    df = load_data(start_date, end_date)
 
 
-# Date input widget
-colA, colB = st.columns([1,2],gap='medium')
-
-with colA:
-    st.date_input(":date: **Pick the date:**", key='day', value=temp_date, min_value=datetime.strptime('2023-03-02','%Y-%m-%d'), max_value=datetime.strptime(current_date,'%Y-%m-%d'))
-
-
-title_date = st.session_state.day.strftime('%#d %B %Y')
-title_weekday = st.session_state.day.strftime('%A')
-
-st.markdown('---')
-
-# Data loading (current day and day before)
-df = load_data(start_date, end_date)
-
-st.markdown('### '+ title_date + ' | ' + title_weekday)
-st.markdown('###')
+    st.markdown('### '+ title_date + ' | ' + title_weekday)
+    st.markdown('###')
 
 
 # Creating dataframe with all data for current date
