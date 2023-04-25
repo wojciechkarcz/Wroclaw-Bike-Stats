@@ -1,5 +1,4 @@
 import streamlit as st
-import datetime
 from datetime import datetime, timedelta
 from google.oauth2 import service_account
 import pandas as pd
@@ -29,6 +28,7 @@ def load_data(start_date, end_date):
     df = pd.read_gbq(query, project_id=st.secrets['project_id'], credentials=credentials)
     return df
 
+@st.cache_data
 def load_last_date():
     query = 'SELECT start_time FROM citybike_wroclaw_2023.bike_rides_2023 ORDER BY start_time DESC LIMIT 1'
     df = pd.read_gbq(query, project_id=st.secrets['project_id'], credentials=credentials)
@@ -51,12 +51,10 @@ def get_bike_rides_metrics(df, date):
 
     avg_ride_length = round(df_day.loc[df_day['distance'] > 1]['distance'].mean(),2)
     avg_ride_length_delta = round(avg_ride_length - round(df_day_before.loc[df_day_before['distance'] > 1]['distance'].mean(),2),2)
-
     return total_rides, total_rides_delta, avg_ride_duration, avg_ride_duration_delta, avg_ride_length, avg_ride_length_delta
 
 def dist_plot_bike_rides(df, date):
     data = df.loc[df['start_time'].dt.date == pd.Timestamp(date)].groupby(df['start_time'].dt.hour)['uid'].count()
-
     return st.bar_chart(data)
 
 def create_df_bike_stations(df, date):
@@ -70,7 +68,6 @@ def create_df_bike_stations(df, date):
     temp['diff'] = temp['return_count'] - temp['rental_count']
     temp = temp[temp['bike_station'] != 'Poza stacją']
     temp = temp.sort_values(ascending=False, by='rental_count')
-
     return temp
 
 def revenue(row):
@@ -104,7 +101,6 @@ def create_df_misc_info(info):
             'Total loops (same rental/return station)': info_loop,
             'Estimated total revenue**': ('{} PLN').format(info_total_revenue)
             }
-    
     return info_df
 
 def create_df_traffic_map(info):
@@ -112,7 +108,6 @@ def create_df_traffic_map(info):
     test_geo2 = info.groupby(['rental_place',info['start_time'].dt.hour,'lat_start','lon_start'])['uid'].count().reset_index().rename(columns=({'uid':'count','start_time':'hour'}))
     g1 = test_geo2.groupby(['hour','rental_place']).agg(count = ('count','sum')).reset_index()
     g1[['lat_start','lon_start']] = test_geo2.groupby(['hour','rental_place'])['lat_start','lon_start'].first().reset_index()[['lat_start','lon_start']]
-
     return g1
 
 def plot_traffic_map(df):
@@ -123,18 +118,9 @@ def plot_traffic_map(df):
     return st.plotly_chart(fig)
 
 
-
-
-
-
-
 def main():
 
-    st.set_page_config(
-    page_title="Wroclaw Bike Stats",
-    page_icon="🚴‍♂️",
-    layout='centered'
-    )
+    st.set_page_config(page_title="Wroclaw Bike Stats", page_icon="🚴‍♂️", layout='centered')
     st.sidebar.header("Wrocław Bike Stats")
     st.sidebar.markdown('It is a web application that aggregates current data on city bike rides in Wrocław, Poland')
 
@@ -142,6 +128,7 @@ def main():
     st.markdown('On this page you can find city bike ride statistics for one specific day. Below you can choose the day from the calendar that interests you. ***Note:*** You can only select days where data is available.')
     st.markdown('#####')
 
+    # Loading the most actual date from the database
     current_date = load_last_date()
 
     if 'day' not in st.session_state:
@@ -169,7 +156,8 @@ def main():
 
     total_rides, total_rides_delta, avg_ride_duration, avg_ride_duration_delta, avg_ride_length, avg_ride_length_delta = get_bike_rides_metrics(df, st.session_state.day)
 
-    # Ride time distribution chart and essential stats
+
+    # Ride time distribution chart and essential stats/metrics
     col1, col2 = st.columns([4,1],gap='medium')
 
     with col1:
@@ -197,6 +185,7 @@ def main():
 
     info = load_df_current_day(df, st.session_state.day)
     info_df = create_df_misc_info(info)
+    
     st.table(info_df)
 
 
@@ -210,16 +199,11 @@ def main():
     plot_traffic_map(g1)
 
  
-    
-    
-
-
     # Footnotes
     st.markdown('#')
     st.markdown('#')
     st.info('''\* - *the total distance traveled by users during the day is calculated as the sum of the distances between stations in a straight line. Of course, we don\'t know what specific route users take, but this data gives general overview about the total length of rides that day.*  
     \** - *the total revenue obtained on a given day for renting bikes is in accordance with the current Wrocław City Bike price list. However, it does not include the revenue from e-bikes because the available data does not include information about the type of bicycles.*  ''')
-
 
 
 if __name__ == '__main__':
