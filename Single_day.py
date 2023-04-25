@@ -34,21 +34,21 @@ def load_last_date():
     df = pd.read_gbq(query, project_id=st.secrets['project_id'], credentials=credentials)
     return np.datetime_as_string(df.tail(1)['start_time'].values[0],unit='D')
 
+def main():
 
-st.set_page_config(
+    st.set_page_config(
     page_title="Wroclaw Bike Stats",
     page_icon="🚴‍♂️",
     layout='centered'
     )
+    st.sidebar.header("Wrocław Bike Stats")
+    st.sidebar.markdown('It is a web application that aggregates current data on city bike rides in Wrocław, Poland')
 
-st.sidebar.header("Wrocław Bike Stats")
-st.sidebar.markdown('It is a web application that aggregates current data on city bike rides in Wrocław, Poland')
+    st.title(':bike: Single day data')
+    st.markdown('On this page you can find city bike ride statistics for one specific day. Below you can choose the day from the calendar that interests you. ***Note:*** You can only select days where data is available.')
+    st.markdown('#####')
 
-st.title(':bike: Single day data')
-st.markdown('On this page you can find city bike ride statistics for one specific day. Below you can choose the day from the calendar that interests you. ***Note:*** You can only select days where data is available.')
-st.markdown('#####')
-
-current_date = load_last_date()
+    current_date = load_last_date()
 
 if 'day' not in st.session_state:
     st.session_state.day = datetime.strptime(current_date,'%Y-%m-%d')
