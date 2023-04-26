@@ -6,7 +6,7 @@ import numpy as np
 import plotly.express as px
 
 
-# Credentials to database connection
+# Credentials to database connection, db private key hidden using Streamlit st.secrets variable
 credentials = service_account.Credentials.from_service_account_info(
     {
         "type": "service_account",
@@ -24,22 +24,34 @@ credentials = service_account.Credentials.from_service_account_info(
 
 @st.cache_data
 def load_data(start_date, end_date):
+    """
+    Loads data between start and end date from Bigquery database and returns in form of dataframe. Function uses @st.cache_data decorator to store data in th cache.
+    """
     query = 'SELECT * FROM citybike_wroclaw_2023.bike_rides_2023 WHERE start_time > \'{}\' AND start_time < \'{}\''.format(start_date, end_date)
     df = pd.read_gbq(query, project_id=st.secrets['project_id'], credentials=credentials)
     return df
 
 @st.cache_data
 def load_last_date():
+    """
+    Function retrieves the most recent date from the database
+    """
     query = 'SELECT start_time FROM citybike_wroclaw_2023.bike_rides_2023 ORDER BY start_time DESC LIMIT 1'
     df = pd.read_gbq(query, project_id=st.secrets['project_id'], credentials=credentials)
     return np.datetime_as_string(df.tail(1)['start_time'].values[0],unit='D')
 
 def date_range(date):
+    """
+    Returns start date (most recent date) and end day (the day before)
+    """
     end_date = date.strftime('%Y-%m-%d') + ' 23:59:59' 
     start_date = (datetime.strptime(end_date,'%Y-%m-%d %H:%M:%S')-timedelta(days=1)).strftime('%Y-%m-%d')
     return start_date, end_date
 
 def get_bike_rides_metrics(df, date):
+    """
+    Returns basic metrics regarding bike rides on provided date as an argument 
+    """
     df_day = df.loc[df['start_time'].dt.date == pd.Timestamp(date)]
     df_day_before = df.loc[df['start_time'].dt.date == pd.Timestamp(date-timedelta(days=1))]
 
@@ -54,10 +66,16 @@ def get_bike_rides_metrics(df, date):
     return total_rides, total_rides_delta, avg_ride_duration, avg_ride_duration_delta, avg_ride_length, avg_ride_length_delta
 
 def dist_plot_bike_rides(df, date):
+    """
+    Outputs bar chart with bike rides rental hours distribution on given date
+    """
     data = df.loc[df['start_time'].dt.date == pd.Timestamp(date)].groupby(df['start_time'].dt.hour)['uid'].count()
     return st.bar_chart(data)
 
 def create_df_bike_stations(df, date):
+    """
+    Creates datframe with all the details regarding bike station (number of rentals, returns, and difference between rentals/returns) on given date
+    """
     rental_df = df.loc[df['start_time'].dt.date == pd.Timestamp(date)].groupby('rental_place')['uid'].count().reset_index(name='rental_count')
     return_df = df.loc[df['start_time'].dt.date == pd.Timestamp(date)].groupby('return_place')['uid'].count().reset_index(name='return_count')
 
@@ -71,6 +89,9 @@ def create_df_bike_stations(df, date):
     return temp
 
 def revenue(row):
+    """
+    Utility function to calculate revenue on each bike ride
+    """
     x = row['duration']
     if x > 20 and x < 61:
         return 2
@@ -83,9 +104,15 @@ def revenue(row):
         return 0
 
 def load_df_current_day(df, date): 
+    """
+    Loads data only from given date and returns a dataframe
+    """
     return df.loc[df['start_time'].dt.date == pd.Timestamp(date)]
 
 def create_df_misc_info(info):
+    """
+    Creates a datframe with misc information about bike rides (eg. numbr of loop rides, number of bikes returned outside bike station, estimated revenue, etc.) and returns dictionary
+    """
     info_stations_outside = info.loc[info['return_place'] == 'Poza stacją']['uid'].count()
     info_stations_outside_ratio = round(info_stations_outside / info['uid'].count() * 100,1)
     info_outside_bikes_fine = info_stations_outside * 5
@@ -104,13 +131,18 @@ def create_df_misc_info(info):
     return info_df
 
 def create_df_traffic_map(info):
-
+    """
+    Transforms dataframe (info) in order to create a new dataframe (g1) with number of rentals at each bike stations at every hour throughout the day 
+    """
     test_geo2 = info.groupby(['rental_place',info['start_time'].dt.hour,'lat_start','lon_start'])['uid'].count().reset_index().rename(columns=({'uid':'count','start_time':'hour'}))
     g1 = test_geo2.groupby(['hour','rental_place']).agg(count = ('count','sum')).reset_index()
     g1[['lat_start','lon_start']] = test_geo2.groupby(['hour','rental_place'])['lat_start','lon_start'].first().reset_index()[['lat_start','lon_start']]
     return g1
 
 def plot_traffic_map(df):
+    """
+    Creates the plotly map/chart with animation of changing number of bike rental at each station
+    """
     fig = px.scatter_mapbox(df, lat="lat_start", lon="lon_start", hover_name='rental_place', 
                             size='count', animation_frame='hour', size_max=25, zoom=11, width=0, height=750
                             )
@@ -119,7 +151,11 @@ def plot_traffic_map(df):
 
 
 def main():
+    """
+    Main function displays all Streamlit elements on a webpage
+    """
 
+    # Page configuration and title
     st.set_page_config(page_title="Wroclaw Bike Stats", page_icon="🚴‍♂️", layout='centered')
     st.sidebar.header("Wrocław Bike Stats")
     st.sidebar.markdown('It is a web application that aggregates current data on city bike rides in Wrocław, Poland')
