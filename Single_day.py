@@ -161,7 +161,7 @@ def main():
     st.sidebar.markdown('It is a web application that aggregates current data on city bike rides in Wrocław, Poland')
 
     st.title(':bike: Single day data')
-    st.markdown('On this page you can find city bike ride statistics for one specific day. Below you can choose the day from the calendar that interests you. ***Note:*** You can only select days where data is available.')
+    st.markdown('On this page you can find city bike ride statistics for one specific day. Below you can choose the day from the calendar that interests you. ***Note:*** The data is released with a two-day delay.')
     st.markdown('#####')
 
     # Loading the most actual date from the database
