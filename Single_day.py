@@ -193,8 +193,7 @@ def main():
 
     with colA:
         st.date_input(":date: **Pick the date:**", key='day', value=temp_date, min_value=datetime.strptime('2023-03-02','%Y-%m-%d'), max_value=datetime.strptime(current_date,'%Y-%m-%d'))
-        #st.date_input(":date: **Pick the date:**", key='day', value=temp_date, min_value=datetime.strptime('2023-03-02','%Y-%m-%d'), max_value=datetime.strptime(current_date,'%Y-%m-%d'))
-        # adding something to change here
+        
     
     title_date = st.session_state.day.strftime('%#d %B %Y')
     title_weekday = st.session_state.day.strftime('%A')
