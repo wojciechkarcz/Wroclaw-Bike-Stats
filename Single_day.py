@@ -180,23 +180,18 @@ def main():
 
     # Loading the most actual date from the database
     current_date = load_last_date()
-    st.write(st.session_state.day)
-
-    if 'day' not in st.session_state:
-        st.session_state.day = datetime.strptime(current_date,'%Y-%m-%d')
-
-    temp_date = st.session_state.day
-    start_date, end_date = date_range(st.session_state.day)
+    temp_date = datetime.strptime(current_date,'%Y-%m-%d')
 
     # Date input widget
     colA, colB = st.columns([1,2],gap='medium')
 
     with colA:
-        st.date_input(":date: **Pick the date:**", key='day', value=temp_date, min_value=datetime.strptime('2023-03-02','%Y-%m-%d'), max_value=datetime.strptime(current_date,'%Y-%m-%d'))
+        date = st.date_input(":date: **Pick the date:**", value=temp_date, min_value=datetime.strptime('2023-03-02','%Y-%m-%d'), max_value=datetime.strptime(current_date,'%Y-%m-%d'))
         
-    
-    title_date = st.session_state.day.strftime('%#d %B %Y')
-    title_weekday = st.session_state.day.strftime('%A')
+    start_date, end_date = date_range(date)
+
+    title_date = date.strftime('%#d %B %Y')
+    title_weekday = date.strftime('%A')
 
     st.markdown('---')
 
@@ -206,7 +201,7 @@ def main():
     st.markdown('### '+ title_date + ' | ' + title_weekday)
     st.markdown('###')
 
-    total_rides, total_rides_delta, avg_ride_duration, avg_ride_duration_delta, avg_ride_length, avg_ride_length_delta = get_bike_rides_metrics(df, st.session_state.day)
+    total_rides, total_rides_delta, avg_ride_duration, avg_ride_duration_delta, avg_ride_length, avg_ride_length_delta = get_bike_rides_metrics(df, date)
 
 
     # Ride time distribution chart and essential stats/metrics
@@ -214,7 +209,7 @@ def main():
 
     with col1:
         st.markdown('Number of bike rentals by hour')
-        dist_plot_bike_rides(df, st.session_state.day)
+        dist_plot_bike_rides(df, date)
 
     with col2:
         st.metric(label="Total rides", value=total_rides, delta=str(total_rides_delta))
@@ -223,7 +218,7 @@ def main():
 
 
     # Table with top rental stations
-    temp = create_df_bike_stations(df, st.session_state.day)
+    temp = create_df_bike_stations(df, date)
 
     st.markdown('#### 📊 Bike stations')
     st.markdown('The table shows bike stations ranked in terms of the number of rentals throughout the day. You can click on any column title to sort the data relative to it.')
@@ -235,7 +230,7 @@ def main():
     st.markdown('#### 🎈 Misc data')
     st.markdown('A table containing additional information related to bike rentals for that day.')
 
-    info = load_df_current_day(df, st.session_state.day)
+    info = load_df_current_day(df, date)
     info_df = create_df_misc_info(info)
     
     st.table(info_df)
