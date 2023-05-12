@@ -52,8 +52,6 @@ def get_bike_rides_metrics(df, date):
     """
     Returns basic metrics regarding bike rides on provided date as an argument 
     """
-    #df_day = df.loc[df['start_time'].dt.date == pd.Timestamp(date)]
-    #df_day_before = df.loc[df['start_time'].dt.date == pd.Timestamp(date-timedelta(days=1))]
 
     date = date.strftime('%Y-%m-%d')
 
@@ -77,7 +75,6 @@ def dist_plot_bike_rides(df, date):
     date = date.strftime('%Y-%m-%d')
     data = df.loc[df['start_time'].dt.strftime('%Y-%m-%d') == date].groupby(df['start_time'].dt.hour)['uid'].count()
 
-    #data = df.loc[df['start_time'].dt.date == pd.Timestamp(date)].groupby(df['start_time'].dt.hour)['uid'].count()
     return st.bar_chart(data)
 
 def create_df_bike_stations(df, date):
@@ -88,9 +85,6 @@ def create_df_bike_stations(df, date):
     date = date.strftime('%Y-%m-%d')
     rental_df = df.loc[df['start_time'].dt.strftime('%Y-%m-%d') == date].groupby('rental_place')['uid'].count().reset_index(name='rental_count')
     return_df = df.loc[df['start_time'].dt.strftime('%Y-%m-%d') == date].groupby('return_place')['uid'].count().reset_index(name='return_count')
-
-    #rental_df = df.loc[df['start_time'].dt.date == pd.Timestamp(date)].groupby('rental_place')['uid'].count().reset_index(name='rental_count')
-    #return_df = df.loc[df['start_time'].dt.date == pd.Timestamp(date)].groupby('return_place')['uid'].count().reset_index(name='return_count')
 
     temp = pd.merge(rental_df,return_df, left_on='rental_place', right_on='return_place', how='left')
     temp = temp.drop(columns='return_place')
