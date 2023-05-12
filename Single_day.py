@@ -25,7 +25,7 @@ credentials = service_account.Credentials.from_service_account_info(
 @st.cache_data
 def load_data(start_date, end_date):
     """
-    Loads data between start and end date from Bigquery database and returns in form of dataframe. Function uses @st.cache_data decorator to store data in th cache.
+    Loads data between start and end date from Bigquery database and returns in form of dataframe. Function uses @st.cache_data decorator to store data in the cache.
     """
     query = 'SELECT * FROM citybike_wroclaw_2023.bike_rides_2023 WHERE start_time > \'{}\' AND start_time < \'{}\''.format(start_date, end_date)
     df = pd.read_gbq(query, project_id=st.secrets['project_id'], credentials=credentials)
@@ -52,8 +52,13 @@ def get_bike_rides_metrics(df, date):
     """
     Returns basic metrics regarding bike rides on provided date as an argument 
     """
-    df_day = df.loc[df['start_time'].dt.date == pd.Timestamp(date)]
-    df_day_before = df.loc[df['start_time'].dt.date == pd.Timestamp(date-timedelta(days=1))]
+    #df_day = df.loc[df['start_time'].dt.date == pd.Timestamp(date)]
+    #df_day_before = df.loc[df['start_time'].dt.date == pd.Timestamp(date-timedelta(days=1))]
+
+    date = date.strftime('%Y-%m-%d')
+
+    df_day = df.loc[df['start_time'].dt.strftime('%Y-%m-%d') == date]
+    df_day_before = df.loc[df['start_time'].dt.strftime('%Y-%m-%d') < date]
 
     total_rides = df_day['uid'].count()
     total_rides_delta = total_rides - df_day_before['uid'].count()
@@ -69,15 +74,23 @@ def dist_plot_bike_rides(df, date):
     """
     Outputs bar chart with bike rides rental hours distribution on given date
     """
-    data = df.loc[df['start_time'].dt.date == pd.Timestamp(date)].groupby(df['start_time'].dt.hour)['uid'].count()
+    date = date.strftime('%Y-%m-%d')
+    data = df.loc[df['start_time'].dt.strftime('%Y-%m-%d') == date].groupby(df['start_time'].dt.hour)['uid'].count()
+
+    #data = df.loc[df['start_time'].dt.date == pd.Timestamp(date)].groupby(df['start_time'].dt.hour)['uid'].count()
     return st.bar_chart(data)
 
 def create_df_bike_stations(df, date):
     """
     Creates datframe with all the details regarding bike station (number of rentals, returns, and difference between rentals/returns) on given date
     """
-    rental_df = df.loc[df['start_time'].dt.date == pd.Timestamp(date)].groupby('rental_place')['uid'].count().reset_index(name='rental_count')
-    return_df = df.loc[df['start_time'].dt.date == pd.Timestamp(date)].groupby('return_place')['uid'].count().reset_index(name='return_count')
+    
+    date = date.strftime('%Y-%m-%d')
+    rental_df = df.loc[df['start_time'].dt.strftime('%Y-%m-%d') == date].groupby('rental_place')['uid'].count().reset_index(name='rental_count')
+    return_df = df.loc[df['start_time'].dt.strftime('%Y-%m-%d') == date].groupby('return_place')['uid'].count().reset_index(name='return_count')
+
+    #rental_df = df.loc[df['start_time'].dt.date == pd.Timestamp(date)].groupby('rental_place')['uid'].count().reset_index(name='rental_count')
+    #return_df = df.loc[df['start_time'].dt.date == pd.Timestamp(date)].groupby('return_place')['uid'].count().reset_index(name='return_count')
 
     temp = pd.merge(rental_df,return_df, left_on='rental_place', right_on='return_place', how='left')
     temp = temp.drop(columns='return_place')
@@ -107,7 +120,8 @@ def load_df_current_day(df, date):
     """
     Loads data only from given date and returns a dataframe
     """
-    return df.loc[df['start_time'].dt.date == pd.Timestamp(date)]
+    date = date.strftime('%Y-%m-%d')
+    return df.loc[df['start_time'].dt.strftime('%Y-%m-%d') == date]
 
 def create_df_misc_info(info):
     """
@@ -136,7 +150,7 @@ def create_df_traffic_map(info):
     """
     test_geo2 = info.groupby(['rental_place',info['start_time'].dt.hour,'lat_start','lon_start'])['uid'].count().reset_index().rename(columns=({'uid':'count','start_time':'hour'}))
     g1 = test_geo2.groupby(['hour','rental_place']).agg(count = ('count','sum')).reset_index()
-    g1[['lat_start','lon_start']] = test_geo2.groupby(['hour','rental_place'])['lat_start','lon_start'].first().reset_index()[['lat_start','lon_start']]
+    g1[['lat_start','lon_start']] = test_geo2.groupby(['hour','rental_place'])[['lat_start','lon_start']].first().reset_index()[['lat_start','lon_start']]
     return g1
 
 def plot_traffic_map(df):
@@ -166,6 +180,7 @@ def main():
 
     # Loading the most actual date from the database
     current_date = load_last_date()
+    st.write(st.session_state.day)
 
     if 'day' not in st.session_state:
         st.session_state.day = datetime.strptime(current_date,'%Y-%m-%d')
