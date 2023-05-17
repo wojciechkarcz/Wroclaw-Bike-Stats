@@ -224,11 +224,10 @@ def main():
     st.markdown('#### 🎈 Misc data')
     st.markdown('A table containing additional information related to bike rentals for that day.')
 
-    info = load_df_current_day(df, date)
+    info = load_df_current_day(df.copy(), date)
     info_df = create_df_misc_info(info)
     
     st.table(info_df)
-
 
     # Map with bike rental frequency throughout the day
     st.markdown('#####')
