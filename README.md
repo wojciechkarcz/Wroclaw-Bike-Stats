@@ -14,9 +14,9 @@ How it works?
 
 ![data pipeline scheme](img/data_pipeline_scheme.png)
 
-Data on bike rides can be found on the official website of the [Wrocław City Hall](https://opendata.cui.wroclaw.pl/dataset?tags=WRM). The data is in the form of .csv files containing all ride details and is updated daily (with a two-day delay). The Python script automatically downloads data every day, processes it (e.g. adding coordinates of bike stations, calculating distances, cleaning data) and uploads it to the Bigquery database. The application database is updated daily around 16:30.
+Data on bike rides can be found on the official website of the [Wrocław City Hall](https://opendata.cui.wroclaw.pl/dataset?tags=WRM). The data is in the form of .csv files containing all ride details and is updated daily (with a two-day delay). The Python script automatically downloads data every day, processes it (e.g. adding coordinates of bike stations, calculating distances, cleaning data) and uploads it to the Bigquery database. The application database is updated daily around 17:30 CET.
 
-The data is then fetched and further processed by a Python application using [Streamlit](https://streamlit.io/). Thanks to this, it is possible to create a user-friendly interface for exploring data on bike trips.
+The data is then fetched and further processed by a Python application using [Streamlit](https://streamlit.io/). Thanks to this, it is possible to create a user-friendly interface for exploring data on bike rentals.
 
 <br>
 
